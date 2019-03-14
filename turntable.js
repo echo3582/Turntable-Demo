@@ -1,5 +1,5 @@
 function draw(){
-  var ctx = document.getElementById('canvas').getContext('2d');
+  let ctx = document.getElementById('canvas').getContext('2d');
   ctx.save();
   ctx.clearRect(0,0,300,300);
   ctx.translate(75,75);
@@ -37,3 +37,24 @@ function draw(){
   ctx.arc(30,30,10,0,Math.PI*2,true); // 绘制
   ctx.stroke();
 }
+
+function startup() {
+  let turntable = document.getElementById("canvas");
+  turntable.addEventListener("touchstart", handleStart, false);
+  turntable.addEventListener("touchend", handleEnd, false);
+  turntable.addEventListener("touchmove", handleMove, false);
+}
+
+function handleStart() {
+  console.log("I'm touched");
+}
+
+function handleEnd() {
+  console.log("I'm released");
+}
+
+function handleMove() {
+  console.log("I'm moving")
+}
+
+startup();
