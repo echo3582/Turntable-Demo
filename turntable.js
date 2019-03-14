@@ -31,4 +31,9 @@ function draw(){
     ctx.rotate(Math.PI/30);
   }
   ctx.restore();
+
+  // 画可识别图案
+  ctx.beginPath();
+  ctx.arc(30,30,10,0,Math.PI*2,true); // 绘制
+  ctx.stroke();
 }
