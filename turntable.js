@@ -1,66 +1,86 @@
-let angle = 0;
-let ctx = document.getElementById('canvas').getContext('2d');
-function draw(angle){
-  // --- 清空页面元素，用于逐帧动画
-  ctx.clearRect(0,0,300,300);
+/**
+ * @author Echo Qian <qianlu3582@163.com>
+ */
 
-  ctx.translate(150,150);
-  ctx.lineWidth = 5;
+/**
+ * @param {string} CANVAS canvas元素
+ * @param {string} CONTEXT canvas上下文
+ * @param {array} TOUCHPOINTS canvas上下文
+ * @param {string} CONTEXT canvas上下文
+ */
+let CANVAS = document.getElementById('canvas');
+let CONTEXT = CANVAS.getContext('2d');
+//touchpoints为存储触摸点的数组
+let TOUCHPOINTS = [];
+//ANGLETURNED为转盘旋转的角度
+let ANGLETURNED = 0;
+
+function drawTurntable(angle) {
+  let angleInside;
+  const translatedCanvasCenterX = 150;
+  const translatedCanvasCenterY = 150;
+  const translateCanvasCenterBackToOriginX = -150;
+  const translateCanvasCenterBackToOriginY = -150;
+  const bigMarkerStartPointX = 100;
+  const smallMarderStartPointX = 117;
+  const MarkerEndPointX = 120;
+  const bigMarkersNumber = 12;
+  const smallMarkersNumber = 120;
+  // --- 清空页面元素，用于逐帧动画
+  CONTEXT.clearRect(0, 0, 300, 300);
+  CONTEXT.translate(translatedCanvasCenterX, translatedCanvasCenterY);
+  CONTEXT.lineWidth = 5;
   //第一次调用draw时angle参数为undefined，所以需要给它赋个初始值。
-  if (angle!==undefined) {
+  if (angle !== undefined) {
     angleInside = angle;
   } else {
     angleInside = 0;
   }
   // 长刻度
-  for (var i=0;i<12;i++){
-    ctx.beginPath();
-    ctx.rotate(Math.PI/6);
-    ctx.moveTo(100*Math.cos(angleInside),100*Math.sin(angleInside));
-    ctx.lineTo(120*Math.cos(angleInside),120*Math.sin(angleInside));
-    ctx.stroke();
+  for (let i = 0; i < bigMarkersNumber; i++) {
+    CONTEXT.beginPath();
+    CONTEXT.rotate(2 * Math.PI / bigMarkersNumber);
+    CONTEXT.moveTo(bigMarkerStartPointX * Math.cos(angleInside), bigMarkerStartPointX * Math.sin(angleInside));
+    CONTEXT.lineTo(MarkerEndPointX * Math.cos(angleInside), MarkerEndPointX * Math.sin(angleInside));
+    CONTEXT.stroke();
   }
   // 短刻度
-  ctx.lineWidth = 3;
-  for (i=0;i<120;i++){
-    if (i%10!=0) {
-      ctx.beginPath();
-      ctx.moveTo(117*Math.cos(angleInside),117*Math.sin(angleInside));
-      ctx.lineTo(120*Math.cos(angleInside),120*Math.sin(angleInside));
-      ctx.stroke();
+  CONTEXT.lineWidth = 3;
+  for (let i = 0; i < smallMarkersNumber; i++) {
+    if (i % 10 !== 0) {
+      CONTEXT.beginPath();
+      CONTEXT.moveTo(smallMarderStartPointX * Math.cos(angleInside), smallMarderStartPointX * Math.sin(angleInside));
+      CONTEXT.lineTo(MarkerEndPointX * Math.cos(angleInside), MarkerEndPointX * Math.sin(angleInside));
+      CONTEXT.stroke();
     }
-    ctx.rotate(Math.PI/60);
+    CONTEXT.rotate(2 * Math.PI / smallMarkersNumber);
   }
 
   // 画可识别图案
-  ctx.beginPath();
-  ctx.arc(60*Math.sin(angleInside),-60*Math.cos(angleInside),10,0,Math.PI*2,true); // 绘制
-  ctx.stroke();
+  CONTEXT.beginPath();
+  CONTEXT.arc(60 * Math.sin(angleInside), -60 * Math.cos(angleInside),10,0, Math.PI * 2,true); // 绘制
+  CONTEXT.stroke();
   //恢复canvas原点
-  ctx.translate(-150,-150);
+  CONTEXT.translate(translateCanvasCenterBackToOriginX, translateCanvasCenterBackToOriginY);
 }
 
-function startup() {
-  let turntable = document.getElementById("canvas");
-  turntable.addEventListener("touchstart", handleStart, false);
-  turntable.addEventListener("touchmove", handleMove, false);
+function setEventListner() {
+  CANVAS.addEventListener("touchstart", handleTouchStart, false);
+  CANVAS.addEventListener("touchmove", handleTouchMove, false);
 }
 
-let touchPoints = [];
-function handleStart(event) {
-  touchPoints.push(event.changedTouches[0].pageX);
-  touchPoints.push(event.changedTouches[0].pageY);
-  let angleTest = calculateAngle([0,0], [1,0], [0,1]);
+function handleTouchStart(event) {
+  TOUCHPOINTS.push(event.changedTouches[0].pageX);
+  TOUCHPOINTS.push(event.changedTouches[0].pageY);
 }
 
-let angleTurned = 0;
-function handleMove(event) {
+function handleTouchMove(event) {
   event.preventDefault();
-  angleTurned += calculateAngle([150, 150], touchPoints.slice(-2), [event.changedTouches[0].pageX, event.changedTouches[0].pageY]);
-  draw(angleTurned);
-  touchPoints = [];
-  touchPoints.push(event.changedTouches[0].pageX);
-  touchPoints.push(event.changedTouches[0].pageY);
+  ANGLETURNED += calculateAngle([150, 150], TOUCHPOINTS.slice(-2), [event.changedTouches[0].pageX, event.changedTouches[0].pageY]);
+  drawTurntable(ANGLETURNED);
+  TOUCHPOINTS = [];
+  TOUCHPOINTS.push(event.changedTouches[0].pageX);
+  TOUCHPOINTS.push(event.changedTouches[0].pageY);
 }
 
 function calculateAngle(pointA, pointB, pointC) {
@@ -73,4 +93,4 @@ function calculateAngle(pointA, pointB, pointC) {
   return angleA;
 }
 
-startup();
+setEventListner();
