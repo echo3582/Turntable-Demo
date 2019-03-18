@@ -14,24 +14,25 @@ let canvas = document.getElementById('canvas');
 let context = canvas.getContext('2d');
 let touchPoints = [];
 let angleTurned = 0;
-const translatedCanvasCenterX = 150;
-const translatedCanvasCenterY = 150;
 
 /**
 * @description 绘制转盘
 * @param {number} angle 本次绘制转盘应该旋转的角度
 */
 function drawTurntable(angle) {
+  adaptDPI();
   let angleInside;
-  const translateCanvasCenterBackToOriginX = -150;
-  const translateCanvasCenterBackToOriginY = -150;
-  const bigMarkerStartPointX = 100;
-  const smallMarderStartPointX = 117;
-  const MarkerEndPointX = 120;
+  const translatedCanvasCenterX = canvas.width / 2;
+  const translatedCanvasCenterY = canvas.height / 2;
+  const translateCanvasCenterBackToOriginX = -(canvas.width / 2);
+  const translateCanvasCenterBackToOriginY = -(canvas.height / 2);
+  const bigMarkerStartPointX = canvas.width / 2 * 0.67;
+  const smallMarderStartPointX = canvas.width / 2 * 0.78;
+  const MarkerEndPointX = canvas.width / 2 * 0.8;
   const bigMarkersNumber = 12;
   const smallMarkersNumber = 120;
   // 清空页面元素，用于逐帧动画
-  context.clearRect(0, 0, 300, 300);
+  context.clearRect(0, 0, canvas.width, canvas.height);
   context.translate(translatedCanvasCenterX, translatedCanvasCenterY);
   context.lineWidth = 5;
   // 第一次调用draw时angle参数为undefined，所以需要给它赋个初始值。
@@ -62,7 +63,7 @@ function drawTurntable(angle) {
 
   // 绘制可识别图案
   context.beginPath();
-  context.arc(60 * Math.sin(angleInside), -60 * Math.cos(angleInside),10,0, Math.PI * 2,true);
+  context.arc((canvas.width / 5) * Math.sin(angleInside), -(canvas.width / 5) * Math.cos(angleInside),10,0, Math.PI * 2,true);
   context.stroke();
   //恢复canvas原点
   context.translate(translateCanvasCenterBackToOriginX, translateCanvasCenterBackToOriginY);
@@ -87,8 +88,9 @@ function handleTouchStart(event) {
 */
 function handleTouchMove(event) {
   event.preventDefault();
+  adaptDPI();
   // 计算相邻触摸点之间的夹角并累加，将此累加后的夹角传递给drawTurntable
-  angleTurned += calculateAngle([translatedCanvasCenterX, translatedCanvasCenterY], touchPoints.slice(-2), [event.changedTouches[0].pageX, event.changedTouches[0].pageY]);
+  angleTurned += calculateAngle([canvas.width / 2, canvas.height / 2], [touchPoints.slice(-2)[0] * adaptDPI(), touchPoints.slice(-2)[1] * adaptDPI()], [event.changedTouches[0].pageX * adaptDPI(), event.changedTouches[0].pageY * adaptDPI()]);
   drawTurntable(angleTurned);
   touchPoints = [];
   touchPoints.push(event.changedTouches[0].pageX);
@@ -107,8 +109,6 @@ function calculateAngle(pointA, pointB, pointC) {
   let cosA = (Math.pow(lengthAB, 2) + Math.pow(lengthAC, 2) - Math.pow(lengthBC, 2)) / (2 * lengthAB * lengthAC);
 
   let angleA = Math.acos(cosA) * judgeDirectionPointCToLineAB(pointA, pointB, pointC);
-  // console.log(pointB);
-  console.log(judgeDirectionPointCToLineAB(pointA, pointB, pointC));
   return angleA;
 }
 /**
@@ -119,7 +119,7 @@ function calculateAngle(pointA, pointB, pointC) {
 */
 function judgeDirectionPointCToLineAB(pointA, pointB, pointC) {
   //顺时针
-  if (((pointC[1] > calculateStraightLineExpression(pointA, pointB, pointC[0])) && (pointB[0] > 150)) || ((pointC[1] < calculateStraightLineExpression(pointA, pointB, pointC[0])) && (pointB[0] <= 150))) {
+  if (((pointC[1] > calculateStraightLineExpression(pointA, pointB, pointC[0])) && (pointB[0] > (canvas.width / 2))) || ((pointC[1] < calculateStraightLineExpression(pointA, pointB, pointC[0])) && (pointB[0] <= (canvas.width / 2)))) {
     return 1;
   } else {
     return -1;
@@ -143,6 +143,33 @@ function calculateStraightLineExpression(pointA, pointB, x) {
   let b = pointA[1] - pointA[0] * k;
   let y = k * x + b;
   return y;
+}
+
+/**
+* @description 保持canvas作图的清晰度
+* @returns {number} canvas的实际渲染倍率
+*/
+function adaptDPI() {
+  canvas.width = 300;
+  canvas.height = 300;
+  // 屏幕的设备像素比
+  let devicePixelRatio = window.devicePixelRatio || 1;
+
+  // 浏览器在渲染canvas之前存储画布信息的像素比
+  let backingStoreRatio = context.webkitBackingStorePixelRatio ||
+                      context.mozBackingStorePixelRatio ||
+                      context.msBackingStorePixelRatio ||
+                      context.oBackingStorePixelRatio ||
+                      context.backingStorePixelRatio || 1;
+
+  // canvas的实际渲染倍率
+  let ratio = devicePixelRatio / backingStoreRatio;
+  canvas.style.width = canvas.width + 'px';
+  canvas.style.height = canvas.height + 'px';
+
+  canvas.width = canvas.width * ratio;
+  canvas.height = canvas.height * ratio;
+  return ratio;
 }
 
 setTouchEventListener();
