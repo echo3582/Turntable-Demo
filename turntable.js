@@ -2,25 +2,23 @@
  * @author Echo Qian <qianlu3582@163.com>
  */
 
-/**
- * @param {string} canvas canvas元素
- * @param {string} context canvas上下文
- * @param {array} touchPoints 存储触摸点的数组
- * @param {number} beforeReleaseAngle 手指离开转盘前旋转的总角度
- * @param {number} timeToEnd 手指离开转盘后继续旋转的时间
- * @param {number} velocityWhenRelease 手指离开转盘时转盘的转速
- * @param {number} spinningTime 手指离开转盘后到当前的时间
- * @param {boolean} isMove 手指离开键盘之前是否执行过touchmove事件
- * @param {array} timeMovePoints 存放每次触发touchmove事件的时间点
- */
+/** canvas canvas元素 */
 let canvas = document.getElementById('canvas');
+/** context canvas上下文 */
 let context = canvas.getContext('2d');
+/** touchPoints 存储触摸点的数组 */
 let touchPoints = [];
+/** beforeReleaseAngle 手指离开转盘前旋转的总角度 */
 let beforeReleaseAngle = 0;
+/** timeToEnd 手指离开转盘后继续旋转的时间 */
 let timeToEnd = 2000;
+/** velocityWhenRelease 手指离开转盘时转盘的转速 */
 let velocityWhenRelease = 0;
+/** spinningTime 手指离开转盘后到当前的时间 */
 let spinningTime = 0;
+/** isMove 手指离开键盘之前是否执行过touchmove事件 */
 let isMove = false;
+/** timeMovePoints 存放每次触发touchmove事件的时间点 */
 let timeMovePoints = [];
 
 /**
@@ -35,7 +33,7 @@ function drawTurntable(angle) {
   const translateCanvasCenterBackToOriginX = -(canvas.width / 2);
   const translateCanvasCenterBackToOriginY = -(canvas.height / 2);
   const bigMarkerStartPointX = canvas.width / 2 * 0.67;
-  const smallMarderStartPointX = canvas.width / 2 * 0.78;
+  const smallMarkerStartPointX = canvas.width / 2 * 0.78;
   const MarkerEndPointX = canvas.width / 2 * 0.8;
   const bigMarkersNumber = 12;
   const smallMarkersNumber = 120;
@@ -50,7 +48,7 @@ function drawTurntable(angle) {
     angleInside = 0;
   }
   // 绘制长刻度
-  for (let i = 0; i < bigMarkersNumber; i++) {
+  for (let index = 0; index < bigMarkersNumber; index++) {
     context.beginPath();
     context.rotate(2 * Math.PI / bigMarkersNumber);
     context.moveTo(bigMarkerStartPointX * Math.cos(angleInside), bigMarkerStartPointX * Math.sin(angleInside));
@@ -59,10 +57,10 @@ function drawTurntable(angle) {
   }
   // 绘制短刻度
   context.lineWidth = 3;
-  for (let i = 0; i < smallMarkersNumber; i++) {
-    if (i % 10 !== 0) {
+  for (let index = 0; index < smallMarkersNumber; index++) {
+    if (index % 10 !== 0) {
       context.beginPath();
-      context.moveTo(smallMarderStartPointX * Math.cos(angleInside), smallMarderStartPointX * Math.sin(angleInside));
+      context.moveTo(smallMarkerStartPointX * Math.cos(angleInside), smallMarkerStartPointX * Math.sin(angleInside));
       context.lineTo(MarkerEndPointX * Math.cos(angleInside), MarkerEndPointX * Math.sin(angleInside));
       context.stroke();
     }
@@ -110,9 +108,6 @@ function handleTouchMove(event) {
   adaptDPI();
   // 相邻两点之间的夹角
   let distanceOfAdjacentTwoPoints = calculateBeforeReleaseAngle([canvas.width / 2, canvas.height / 2], [touchPoints.slice(-2)[0] * adaptDPI(), touchPoints.slice(-2)[1] * adaptDPI()], [event.changedTouches[0].pageX * adaptDPI(), event.changedTouches[0].pageY * adaptDPI()]);
-
-  //倒数第三个点和倒数第二点之间的夹角
-  let distanceBetweenSecondAndThird = calculateBeforeReleaseAngle([canvas.width / 2, canvas.height / 2], [touchPoints.slice(-6, -4)[0] * adaptDPI(), touchPoints.slice(-6, -4)[1] * adaptDPI()], [touchPoints.slice(-2)[0] * adaptDPI(), touchPoints.slice(-2)[1] * adaptDPI()]);
 
   // 计算相邻触摸点之间的夹角并累加
   beforeReleaseAngle += distanceOfAdjacentTwoPoints;
@@ -176,17 +171,20 @@ function judgeDirectionPointCToLineAB(pointA, pointB, pointC) {
  * @param {array} pointA A点坐标
  * @param {array} pointB B点坐标
  * @param {number} x 横坐标
- * @param {number} y 以x为横坐标，直线AB上对应的纵坐标
+ * @return {number} y 以x为横坐标，直线AB上对应的纵坐标
  */
 function calculateStraightLineExpression(pointA, pointB, x) {
-  let k;
+  /** slopeK 直线斜率k */
+  let slopeK;
+  /** interceptB 直线纵截距b*/
+  let interceptB
   if (pointA[0] - pointB[0] === 0) {
-    k = 0;
+    slopeK = 0;
   } else {
-    k = (pointA[1] - pointB[1]) / (pointA[0] - pointB[0]);
+    slopeK = (pointA[1] - pointB[1]) / (pointA[0] - pointB[0]);
   }
-  let b = pointA[1] - pointA[0] * k;
-  let y = k * x + b;
+  interceptB = pointA[1] - pointA[0] * slopeK;
+  let y = slopeK * x + interceptB;
   return y;
 }
 
