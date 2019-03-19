@@ -92,10 +92,14 @@ function setTouchEventListener() {
  * @description 将初始触摸点横轴坐标存入touchPoints数组
  */
 function handleTouchStart(event) {
+  event.preventDefault();
   touchPoints.push(event.changedTouches[0].pageX);
   touchPoints.push(event.changedTouches[0].pageY);
+  //使转盘可以再次被转动
   spinningTime = 0;
   isMove = false;
+  // 停下转动中的转盘
+  velocityWhenRelease = 0;
 }
 
 /**
