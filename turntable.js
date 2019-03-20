@@ -20,7 +20,8 @@ let spinningTime = 0;
 let isMove = false;
 /** timeMovePoints 存放每次触发touchmove事件的时间点 */
 let timeMovePoints = [];
-
+/** stopRotate 当stopRotate值为true时转盘停止转动 */
+let stopRotate = false;
 /**
  * @description 绘制转盘
  * @param {number} angle 本次绘制转盘应该旋转的角度
@@ -97,7 +98,7 @@ function handleTouchStart(event) {
   spinningTime = 0;
   isMove = false;
   // 停下转动中的转盘
-  velocityWhenRelease = 0;
+  stopRotate = true;
 }
 
 /**
@@ -123,6 +124,7 @@ function handleTouchMove(event) {
   let endTime = timeMovePoints.slice(-1);
   velocityWhenRelease = calculateVelocity(distanceOfAdjacentTwoPoints, timeMovePoints.slice(-2, -1), timeMovePoints.slice(-1));
   isMove = true;
+  stopRotate = false;
 }
 
 /**
@@ -245,12 +247,13 @@ function rotateWheel() {
   let totalRotatedAngle;
   // 当 当前时间 大于 总时间，停止旋转，并返回当前值
   spinningTime += 20;
-  if (spinningTime >= timeToEnd) {
+  if (spinningTime >= timeToEnd || stopRotate === true) {
     return
   }
   let _spinningChange = (velocityWhenRelease * 100000 - easeOut(spinningTime, 0, velocityWhenRelease * 100000, timeToEnd)) * (Math.PI / 180);
   beforeReleaseAngle += _spinningChange;
   totalRotatedAngle = beforeReleaseAngle;
+  stopRotate = false;
   drawTurntable(totalRotatedAngle);
   window.requestAnimationFrame(rotateWheel);
 }
